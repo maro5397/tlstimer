@@ -54,3 +54,5 @@ dkms.conf
 # vscode configure
 /.vscode
 main
+files/
+logs/
