@@ -52,7 +52,7 @@ float getSendTime(TcpClient* client, std::string filename)
     DLOG(INFO) << "data size(byte): " << size << "byte(s)";
 
     start = clock();
-    if(client->send(sendbuf, BUFSIZE) == -1) {
+    if(client->send(sendbuf, strlen(sendbuf)) == -1) {
         exit(-1);
     }
     if(client->recv(recvbuf, BUFSIZE) == -1) {
