@@ -56,6 +56,7 @@ float getSendTime(SslClient* client, std::string filename)
     finish = *((long*)recvbuf);
 
     spent = (float)(finish - start);
+    DLOG(INFO) << "server finish clock: " << finish;
     DLOG(INFO) << "data transmission time(s): " << spent / CLOCKS_PER_SEC << "s";
     return spent;
 }
