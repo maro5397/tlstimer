@@ -51,8 +51,12 @@ float getSendTime(TcpClient* client, std::string filename)
     DLOG(INFO) << "data size(byte): " << size << "byte(s)";
 
     start = clock();
-    client->send(sendbuf, BUFSIZE);
-    client->recv(recvbuf, BUFSIZE);
+    if(client->send(sendbuf, BUFSIZE) == -1) {
+        exit(-1);
+    }
+    if(client->recv(recvbuf, BUFSIZE) == -1) {
+        exit(-1);
+    }
     finish = *((long*)recvbuf);
 
     spent = (float)(finish - start);
@@ -67,7 +71,9 @@ float getConnTime(TcpClient* client, std::string ip, int port)
     float spent;
 
     start = clock();
-    client->connect(ip, port);
+    if(client->connect(ip, port) == -1) {
+        exit(-1);
+    }
     finish = clock();
 
     spent = (float)(finish - start);
