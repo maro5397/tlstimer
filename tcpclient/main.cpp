@@ -96,7 +96,7 @@ void setDirAndLog()
     
     FLAGS_alsologtostderr = 1;
     google::SetLogDestination(google::INFO, "logs/");
-    //google::InitGoogleLogging("logs/");
+    google::InitGoogleLogging("logs/");
 }
 
 void usage()
