@@ -1,42 +1,95 @@
 #include "sslserver.h"
+#include <sys/stat.h>
+#include <ctime>
+#include <fstream>
 
-class EchoSsl : public SslServer
+class TimerSsl : public SslServer
 {
 public:
-    EchoSsl();
-    ~EchoSsl() {}
+    TimerSsl();
+    ~TimerSsl() {}
 
 protected:
     void handleClnt(SslClientSocket* clntsock) override;
+    void saveFile(char* recvbuf);
 };
 
-EchoSsl::EchoSsl() {
+TimerSsl::TimerSsl() {
 }
 
-void EchoSsl::handleClnt(SslClientSocket* clntsock) {
-    char buffer[BUFSIZE];
-    char message[] = "HI, this is server";
+void TimerSsl::handleClnt(SslClientSocket* clntsock) {
+    char recvbuf[BUFSIZE];
     int len = 0;
     int count = 0;
-    while((len = clntsock->recv(buffer, BUFSIZE)) != -1) {
+    clock_t finish = 0;
+    while((len = clntsock->recv(recvbuf, BUFSIZE)) != -1) {
         if(len == 0) {
             DLOG(INFO) << "clntsock is shutdown";
             return;
         }
-        DLOG(INFO) << count++;
-        DLOG(INFO) << "=====recv data from client=====";
-        DLOG(INFO) << buffer;
-        DLOG(INFO) << "=====recv data from client=====";
-        clntsock->send(message, strlen(message) + 1);
+        finish = clock();
+        char* sendbuf = (char*)&finish;
+        clntsock->send(sendbuf, strlen(sendbuf));
+        DLOG(INFO) << "recv data number: " << count++;
+        DLOG(INFO) << "\n===============recv data from client===============\n" 
+                   << recvbuf 
+                   << "\n===============recv data from client===============\n";
+        DLOG(INFO) << "finish clock: " << finish;
+        //saveFile(recvbuf);
     }
     return;
 }
 
-int main()
+void TimerSsl::saveFile(char* recvbuf)
 {
-    EchoSsl server;
-    server.start(9090, "../certfiles/aes128/2048/cert.pem", "../certfiles/aes128/2048/key.pem");
-    sleep(60);
-    server.stop();
+    time_t rawtime;
+    time(&rawtime);
+    struct tm* timeinfo = localtime(&rawtime);
+    char buffer[80];
+    strftime(buffer, sizeof(buffer), "%d-%m-%Y %H:%M:%S", timeinfo);
+    std::string datetime(buffer);
+
+    std::ofstream fout("files/" + datetime + ".txt");
+    if(fout.is_open()) {
+        fout.write(recvbuf, strlen(recvbuf));
+    }
+    fout.close();
+    return;
+}
+
+void usage()
+{
+	DLOG(INFO) << "syntax : main <server-port> <symmetric type> <certificate type>";
+	DLOG(INFO) << "sample : main 8080 aes256 4096";
+}
+
+int main(int argc, char* argv[])
+{
+    if (mkdir("files", 0777) == -1)
+        DLOG(INFO) << "files directory create Error : " << strerror(errno);
+    else
+        DLOG(INFO) << "files directory create Success";
+
+    if(argc < 4) {
+        DLOG(INFO) << "usage incorrect";
+        usage();
+        exit(-1);
+    }
+
+    int port = atoi(argv[1]);
+    std::string symtype(argv[2]);
+    std::string certtype(argv[3]);
+
+    DLOG(INFO) << "usage correct parse complete";
+    DLOG(INFO) << "port: " << port;
+    DLOG(INFO) << "symmetric type: " << symtype;
+    DLOG(INFO) << "certificate type: " << certtype;
+    
+    TimerSsl* server = new TimerSsl();
+    server->start(port, 
+                  "../certfiles/" + symtype + "/" + certtype + "/cert.pem", 
+                  "../certfiles/" + symtype + "/" + certtype + "/key.pem");
+    sleep(6000);
+    server->stop();
     return 0;
 }
