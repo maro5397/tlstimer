@@ -29,6 +29,7 @@ int main(int argc, char* argv[])
     TcpClient* client = new TcpClient();
     getConnTime(client, ip, port);
     getSendTime(client, filename);
+    client->disconnect();
 }
 
 float getSendTime(TcpClient* client, std::string filename)

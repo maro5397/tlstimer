@@ -29,6 +29,7 @@ int main(int argc, char* argv[])
     SslClient* client = new SslClient();
     getConnTime(client, ip, port);
     getSendTime(client, filename);
+    client->disconnect();
 }
 
 float getSendTime(SslClient* client, std::string filename)
