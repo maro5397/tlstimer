@@ -56,6 +56,7 @@ double getSendTime(SslClient* client, std::string filename, int count)
 
     for(int i = 0; i < count; i++)
     {
+        DLOG(INFO) << "Case #" << i + 1;
         gettimeofday(&start, NULL);
         if(client->send(sendbuf, strlen(sendbuf)) == -1) {
             exit(-1);
