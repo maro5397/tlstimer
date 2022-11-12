@@ -11,7 +11,7 @@ void usage();
 int main(int argc, char* argv[])
 {
     setDirAndLog();
-    if(argc < 4) {
+    if(argc < 5) {
         DLOG(INFO) << "usage incorrect";
         usage();
         exit(-1);
@@ -20,6 +20,8 @@ int main(int argc, char* argv[])
     std::string ip(argv[1]);
     int port = atoi(argv[2]);
     std::string filename(argv[3]);
+    int count = atoi(argv[4]);
+    float spent = 0.0;
     
     DLOG(INFO) << "usage correct parse complete";
     DLOG(INFO) << "ip: " << ip;
@@ -28,7 +30,12 @@ int main(int argc, char* argv[])
 
     TcpClient* client = new TcpClient();
     getConnTime(client, ip, port);
-    getSendTime(client, filename);
+    for(int i = 0; i < count; i++) {
+        DLOG(INFO) << "Case #" << i;
+        spent += getSendTime(client, filename);
+        usleep(500000);
+    }
+    DLOG(INFO) << "average of send package: " << spent / count << "s";
     client->disconnect();
 }
 
@@ -60,9 +67,9 @@ float getSendTime(TcpClient* client, std::string filename)
     }
     finish = *((long*)recvbuf);
 
-    spent = (float)(finish - start);
+    spent = (float)(finish - start) / CLOCKS_PER_SEC;
     DLOG(INFO) << "server finish clock: " << finish;
-    DLOG(INFO) << "data transmission time(s): " << spent / CLOCKS_PER_SEC << "s";
+    DLOG(INFO) << "data transmission time(s): " << spent << "s";
     return spent;
 }
 
@@ -77,8 +84,8 @@ float getConnTime(TcpClient* client, std::string ip, int port)
     }
     finish = clock();
 
-    spent = (float)(finish - start);
-    DLOG(INFO) << "create connection time(s): " << spent / CLOCKS_PER_SEC << "s";
+    spent = (float)(finish - start) / CLOCKS_PER_SEC;
+    DLOG(INFO) << "create connection time(s): " << spent << "s";
     return spent;
 }
 
@@ -101,6 +108,6 @@ void setDirAndLog()
 
 void usage()
 {
-	DLOG(INFO) << "syntax : main <server-ip> <server-port> <filename>";
-	DLOG(INFO) << "sample : main 192.168.1.2 8080 testdata.txt";
+	DLOG(INFO) << "syntax : main <server-ip> <server-port> <filename> <count>";
+	DLOG(INFO) << "sample : main 192.168.1.2 8080 testdata.txt 30";
 }
