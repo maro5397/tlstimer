@@ -23,6 +23,7 @@ void TimerSsl::handleClnt(SslClientSocket* clntsock) {
     int len = 0;
     int count = 0;
     struct timeval finish;
+    bool issave = false;
     while((len = clntsock->recv(recvbuf, BUFSIZE)) != -1) {
         if(len == 0) {
             DLOG(INFO) << "clntsock is shutdown";
@@ -36,7 +37,10 @@ void TimerSsl::handleClnt(SslClientSocket* clntsock) {
                    << recvbuf 
                    << "\n===============recv data from client===============\n";
         DLOG(INFO) << "finish clock: " << finish.tv_sec * 1000000 + finish.tv_usec << "microseconds";
-        //saveFile(recvbuf);
+        if(!issave) {
+            saveFile(recvbuf);
+            issave = true;
+        }
     }
     return;
 }
