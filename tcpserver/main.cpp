@@ -1,7 +1,8 @@
 #include "tcpserver.h"
 #include <sys/stat.h>
-#include <ctime>
 #include <fstream>
+#include <sys/time.h>
+#include <unistd.h>
 
 class TimerTcp : public TcpServer
 {
@@ -21,20 +22,20 @@ void TimerTcp::handleClnt(TcpClientSocket* clntsock) {
     char recvbuf[BUFSIZE];
     int len = 0;
     int count = 0;
-    clock_t finish = 0;
+    struct timeval finish;
     while((len = clntsock->recv(recvbuf, BUFSIZE)) != -1) {
         if(len == 0) {
             DLOG(INFO) << "clntsock is shutdown";
             return;
         }
-        finish = clock();
+        gettimeofday(&finish, NULL);
         char* sendbuf = (char*)&finish;
-        clntsock->send(sendbuf, strlen(sendbuf));
+        clntsock->send(sendbuf, sizeof(struct timeval));
         DLOG(INFO) << "recv data number: " << count++;
         DLOG(INFO) << "\n===============recv data from client===============\n" 
                    << recvbuf 
                    << "\n===============recv data from client===============\n";
-        DLOG(INFO) << "finish clock: " << finish;
+        DLOG(INFO) << "finish clock: " << finish.tv_sec * 1000000 + finish.tv_usec << "microseconds";
         //saveFile(recvbuf);
     }
     return;

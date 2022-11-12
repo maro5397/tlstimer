@@ -1,10 +1,11 @@
 #include "sslclient.h"
 #include <sys/stat.h>
-#include <ctime>
 #include <fstream>
+#include <sys/time.h>
+#include <unistd.h>
 
-float getConnTime(SslClient* client, std::string ip, int port);
-float getSendTime(SslClient* client, std::string filename);
+double getConnTime(SslClient* client, std::string ip, int port);
+double getSendTime(SslClient* client, std::string filename, int count);
 void setDirAndLog();
 void usage();
 
@@ -21,7 +22,6 @@ int main(int argc, char* argv[])
     int port = atoi(argv[2]);
     std::string filename(argv[3]);
     int count = atoi(argv[4]);
-    float spent = 0.0;
     
     DLOG(INFO) << "usage correct parse complete";
     DLOG(INFO) << "ip: " << ip;
@@ -30,19 +30,15 @@ int main(int argc, char* argv[])
 
     SslClient* client = new SslClient();
     getConnTime(client, ip, port);
-    for(int i = 0; i < count; i++) {
-        DLOG(INFO) << "Case #" << i;
-        spent += getSendTime(client, filename);
-        usleep(1);
-    }
-    DLOG(INFO) << "average of send package: " << spent / count << "s";
+    getSendTime(client, filename, count);
     client->disconnect();
+    return 0;
 }
 
-float getSendTime(SslClient* client, std::string filename)
+double getSendTime(SslClient* client, std::string filename, int count)
 {
-    clock_t start, finish;
-    float spent;
+    struct timeval start, finish;
+	double spent = 0.0;
     char sendbuf[BUFSIZE];
     char recvbuf[BUFSIZE];
     std::ifstream fin("files/" + filename);
@@ -58,33 +54,39 @@ float getSendTime(SslClient* client, std::string filename)
     
     DLOG(INFO) << "data size(byte): " << size << "byte(s)";
 
-    start = clock();
-    if(client->send(sendbuf, strlen(sendbuf)) == -1) {
-        exit(-1);
+    for(int i = 0; i < count; i++)
+    {
+        gettimeofday(&start, NULL);
+        if(client->send(sendbuf, strlen(sendbuf)) == -1) {
+            exit(-1);
+        }
+        if(client->recv(recvbuf, BUFSIZE) == -1) {
+            exit(-1);
+        }
+        finish = *((struct timeval*)recvbuf);
+        spent += (finish.tv_sec - start.tv_sec) + ((finish.tv_usec - start.tv_usec) / 1000000.0);
+        DLOG(INFO) << "client start clock: " << start.tv_sec * 1000000 + start.tv_usec << "microseconds";
+        DLOG(INFO) << "server finish clock: " << finish.tv_sec * 1000000 + finish.tv_usec << "microseconds";
+        DLOG(INFO) << "spent clock: " << (finish.tv_sec - start.tv_sec) + ((finish.tv_usec - start.tv_usec) / 1000000.0) << "s";
+        usleep(500000);
     }
-    if(client->recv(recvbuf, BUFSIZE) == -1) {
-        exit(-1);
-    }
-    finish = *((long*)recvbuf);
-
-    spent = (float)(finish - start) / CLOCKS_PER_SEC;
-    DLOG(INFO) << "server finish clock: " << finish;
-    DLOG(INFO) << "data transmission time(s): " << spent << "s";
-    return spent;
+    DLOG(INFO) << "average of data transmission time(s): " << spent / count << "s";
+    return spent / count;
 }
 
-float getConnTime(SslClient* client, std::string ip, int port)
+double getConnTime(SslClient* client, std::string ip, int port)
 {
-    clock_t start, finish;
-    float spent;
+    struct timeval start, finish;
+	double spent;
 
-    start = clock();
+    gettimeofday(&start, NULL);
     if(client->connect(ip, port) == -1) {
         exit(-1);
     }
-    finish = clock();
+    gettimeofday(&finish, NULL);
 
-    spent = (float)(finish - start) / CLOCKS_PER_SEC;
+    spent = (finish.tv_sec - start.tv_sec) + ((finish.tv_usec - start.tv_usec) / 1000000.0);
+
     DLOG(INFO) << "create connection time(s): " << spent << "s";
     return spent;
 }
