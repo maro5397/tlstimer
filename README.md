@@ -15,6 +15,12 @@ check TLS time for report
     openssl genrsa -aes192 -out server.key 2048
     openssl genrsa -aes256 -out server.key 4096
     openssl genrsa -aes256 -out server.key 2048
+    openssl genrsa -aria128 -out server.key 4096
+    openssl genrsa -aria128 -out server.key 2048
+    openssl genrsa -aria192 -out server.key 4096
+    openssl genrsa -aria192 -out server.key 2048
+    openssl genrsa -aria256 -out server.key 4096
+    openssl genrsa -aria256 -out server.key 2048
 ```
 
 2. Each time you enter one of the above commands, enter the following command.
