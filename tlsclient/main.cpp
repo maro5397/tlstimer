@@ -4,7 +4,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-double getConnTime(SslClient* client, std::string ip, int port);
+double getConnTime(SslClient* client, std::string ip, int port, char* cipherlist);
 double getSendTime(SslClient* client, std::string filename, int count);
 void setDirAndLog();
 void usage();
@@ -12,7 +12,7 @@ void usage();
 int main(int argc, char* argv[])
 {
     setDirAndLog();
-    if(argc < 5) {
+    if(argc < 6) {
         DLOG(INFO) << "usage incorrect";
         usage();
         exit(-1);
@@ -20,16 +20,18 @@ int main(int argc, char* argv[])
 
     std::string ip(argv[1]);
     int port = atoi(argv[2]);
-    std::string filename(argv[3]);
-    int count = atoi(argv[4]);
+    char* cipherlist = argv[3];
+    std::string filename(argv[4]);
+    int count = atoi(argv[5]);
     
     DLOG(INFO) << "usage correct parse complete";
     DLOG(INFO) << "ip: " << ip;
     DLOG(INFO) << "port: " << port;
+    DLOG(INFO) << "cipherlist: " << cipherlist;
     DLOG(INFO) << "filename: " << filename;
 
-    SslClient* client = new SslClient();
-    getConnTime(client, ip, port);
+    SslClient* client = new SslClient(1.2);
+    getConnTime(client, ip, port, cipherlist);
     getSendTime(client, filename, count);
     client->disconnect();
     return 0;
@@ -75,13 +77,13 @@ double getSendTime(SslClient* client, std::string filename, int count)
     return spent / count;
 }
 
-double getConnTime(SslClient* client, std::string ip, int port)
+double getConnTime(SslClient* client, std::string ip, int port, char* cipherlist)
 {
     struct timeval start, finish;
 	double spent;
 
     gettimeofday(&start, NULL);
-    if(client->connect(ip, port) == -1) {
+    if(client->connect(ip, port, cipherlist) == -1) {
         exit(-1);
     }
     gettimeofday(&finish, NULL);
@@ -111,6 +113,6 @@ void setDirAndLog()
 
 void usage()
 {
-	DLOG(INFO) << "syntax : main <server-ip> <server-port> <filename> <count>";
+	DLOG(INFO) << "syntax : main <server-ip> <server-port> <ciphersuite> <filename> <count>";
 	DLOG(INFO) << "sample : main 192.168.1.2 8080 testdata.txt 30";
 }

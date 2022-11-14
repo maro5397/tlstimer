@@ -7,7 +7,7 @@
 class TimerSsl : public SslServer
 {
 public:
-    TimerSsl();
+    TimerSsl(double version);
     ~TimerSsl() {}
 
 protected:
@@ -15,7 +15,7 @@ protected:
     void saveFile(char* recvbuf);
 };
 
-TimerSsl::TimerSsl() {
+TimerSsl::TimerSsl(double version) : SslServer(version) {
 }
 
 void TimerSsl::handleClnt(SslClientSocket* clntsock) {
@@ -64,7 +64,7 @@ void TimerSsl::saveFile(char* recvbuf)
 
 void usage()
 {
-	DLOG(INFO) << "syntax : main <server-port> <symmetric type> <certificate type>";
+	DLOG(INFO) << "syntax : main <server-port> <ciphersuite> <symmetric type> <certificate type>";
 	DLOG(INFO) << "sample : main 8080 aes256 4096";
 }
 
@@ -75,25 +75,28 @@ int main(int argc, char* argv[])
     else
         DLOG(INFO) << "files directory create Success";
 
-    if(argc < 4) {
+    if(argc < 5) {
         DLOG(INFO) << "usage incorrect";
         usage();
         exit(-1);
     }
 
     int port = atoi(argv[1]);
-    std::string symtype(argv[2]);
-    std::string certtype(argv[3]);
+    char* cipherlist = argv[2];
+    std::string symtype(argv[3]);
+    std::string certtype(argv[4]);
 
     DLOG(INFO) << "usage correct parse complete";
     DLOG(INFO) << "port: " << port;
+    DLOG(INFO) << "cipherlist: " << cipherlist;
     DLOG(INFO) << "symmetric type: " << symtype;
     DLOG(INFO) << "certificate type: " << certtype;
     
-    TimerSsl* server = new TimerSsl();
+    TimerSsl* server = new TimerSsl(1.2);
     server->start(port, 
                   "../certfiles/" + symtype + "/" + certtype + "/cert.pem", 
-                  "../certfiles/" + symtype + "/" + certtype + "/key.pem");
+                  "../certfiles/" + symtype + "/" + certtype + "/key.pem",
+                  cipherlist);
     sleep(6000);
     server->stop();
     return 0;
