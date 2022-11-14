@@ -52,6 +52,10 @@ double getSendTime(SslClient* client, std::string filename, int count)
         fin.seekg(0, std::ios::beg);
         fin.read(sendbuf, size);
     }
+    else {
+        DLOG(INFO) << "There is no files";
+        exit(-1);
+    }
     fin.close();
     
     DLOG(INFO) << "data size(byte): " << size << "byte(s)";
