@@ -24,8 +24,8 @@ $ openssl genrsa -aria256 -out server.key 2048
 $ openssl req -new -key server.key -out server.csr
 $ cp server.key server.key.origin
 $ openssl x509 -req -days 3650 -in server.csr -signkey server.key -out server.crt
-$ openssl rsa -in server.key -text > key.pem
-$ openssl x509 -inform PEM -in server.crt > crt.pem
+$ openssl rsa -in server.key -text ] key.pem
+$ openssl x509 -inform PEM -in server.crt ] crt.pem
 $ openssl pkcs12 -export -in server.crt -inkey server.key -out cert.p12
 $ openssl pkcs12 -in cert.p12 -nodes -out cert.pem
 ```
@@ -47,13 +47,13 @@ AES256-CCM                     TLSv1.2 Kx=RSA      Au=RSA   Enc=AESCCM(256)     
 ## How to USE
 
 ### Server
-* main <server-port> <ciphersuite> <symmetric type> <certificate type>
+* main [server-port] [ciphersuite] [symmetric type] [certificate type]
 ```
 $ main 8080 AES256-GCM-SHA384 aes256 2048
 ```
 
 ### Client
-* main <server-ip> <server-port> <ciphersuite> <filename> <count>
+* main [server-ip] [server-port] [ciphersuite] [filename] [count]
 ```
 $ main 127.0.0.1 8080 AES256-GCM-SHA384 testdata.txt 1
 ```
