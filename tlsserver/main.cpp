@@ -7,6 +7,9 @@
 
 #define BUFLEN 1024+1
 
+int view = 0;
+int save = 0;
+
 class TimerSsl : public SslServer
 {
     std::string numoffiles_;
@@ -42,12 +45,16 @@ void TimerSsl::handleClnt(SslClientSocket* clntsock) {
         char* sendbuf = (char*)&finish;
         clntsock->send(sendbuf, sizeof(struct timeval));
         DLOG(INFO) << "recv data number: " << count++;
-        DLOG(INFO) << "\n===============recv data from client===============\n" 
-                   << recvbuf 
-                   << "\n===============recv data from client===============\n";
+        if(view) {
+            DLOG(INFO) << "\n===============recv data from client===============\n" 
+                       << recvbuf 
+                       << "\n===============recv data from client===============\n";
+        }
         DLOG(INFO) << "finish clock: " << finish.tv_sec * 1000000 + finish.tv_usec << "microseconds";
         DLOG(INFO) << "recv length(byte): " << len << "byte(s)";
-        saveFile(recvbuf);
+        if(save) {
+            saveFile(recvbuf);
+        }
     }
     DLOG(INFO) << "abnormal disconnection from server";
     return;
@@ -91,7 +98,7 @@ void usage();
 int main(int argc, char* argv[])
 {
     setDirAndLog();
-    if(argc < 5) {
+    if(argc < 7) {
         DLOG(INFO) << "usage incorrect";
         usage();
         exit(-1);
@@ -101,12 +108,16 @@ int main(int argc, char* argv[])
     char* cipherlist = argv[2];
     std::string symtype(argv[3]);
     std::string certtype(argv[4]);
+    view = atoi(argv[5]);
+    save = atoi(argv[6]);
 
     DLOG(INFO) << "usage correct parse complete";
     DLOG(INFO) << "port: " << port;
     DLOG(INFO) << "cipherlist: " << cipherlist;
     DLOG(INFO) << "symmetric type: " << symtype;
     DLOG(INFO) << "certificate type: " << certtype;
+    DLOG(INFO) << "view data: " << view;
+    DLOG(INFO) << "save file: " << save;
     
     TimerSsl* server = new TimerSsl(1.2);
     server->start(port, 
@@ -120,8 +131,8 @@ int main(int argc, char* argv[])
 
 void usage()
 {
-	DLOG(INFO) << "syntax : main <server-port> <ciphersuite> <symmetric type> <certificate type>";
-	DLOG(INFO) << "sample : main 8080 aes256 4096";
+	DLOG(INFO) << "syntax : main <server-port> <ciphersuite> <symmetric type> <certificate type> <view data> <save mode>";
+	DLOG(INFO) << "sample : main 8080 AES128-GCM-SHA256 aes128 2048 0 0";
 }
 
 void setDirAndLog()

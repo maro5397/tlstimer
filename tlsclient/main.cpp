@@ -6,6 +6,9 @@
 
 #define BUFLEN 1024+1
 
+int delay = 0;
+int view = 0;
+
 double getConnTime(SslClient* client, std::string ip, int port, char* cipherlist);
 double getSendTime(SslClient* client, std::string filename, int count);
 int getFileSize(std::string filename);
@@ -16,7 +19,7 @@ void usage();
 int main(int argc, char* argv[])
 {
     setDirAndLog();
-    if(argc < 6) {
+    if(argc < 8) {
         DLOG(INFO) << "usage incorrect";
         usage();
         exit(-1);
@@ -27,12 +30,16 @@ int main(int argc, char* argv[])
     char* cipherlist = argv[3];
     std::string filename(argv[4]);
     int count = atoi(argv[5]);
+    view = atoi(argv[6]);
+    delay = atoi(argv[7]);
     
     DLOG(INFO) << "usage correct parse complete";
     DLOG(INFO) << "ip: " << ip;
     DLOG(INFO) << "port: " << port;
     DLOG(INFO) << "cipherlist: " << cipherlist;
     DLOG(INFO) << "filename: " << filename;
+    DLOG(INFO) << "view data: " << view;
+    DLOG(INFO) << "delay(microsecond): " << delay;
 
     SslClient* client = new SslClient(1.2);
     getConnTime(client, ip, port, cipherlist);
@@ -55,9 +62,11 @@ double getSendTime(SslClient* client, std::string filename, int count)
         for(int j = 0; j < size; j += BUFLEN-1)
         {
             setSendBuffer(sendbuf, filename, j, size);
-            DLOG(INFO) << "\n===============send data from client===============\n" 
-                       << sendbuf 
-                       << "\n===============send data from client===============\n";
+            if(view) {
+                DLOG(INFO) << "\n===============send data from client===============\n" 
+                           << sendbuf 
+                           << "\n===============send data from client===============\n";
+            }
             gettimeofday(&start, NULL);
             if(client->send(sendbuf, strlen(sendbuf)) == -1) {
                 exit(-1);
@@ -69,8 +78,8 @@ double getSendTime(SslClient* client, std::string filename, int count)
             spent += (finish.tv_sec - start.tv_sec) + ((finish.tv_usec - start.tv_usec) / 1000000.0);
             DLOG(INFO) << "client start clock: " << start.tv_sec * 1000000 + start.tv_usec << "microseconds";
             DLOG(INFO) << "server finish clock: " << finish.tv_sec * 1000000 + finish.tv_usec << "microseconds";
-            DLOG(INFO) << "spent clock: " << (finish.tv_sec - start.tv_sec) + ((finish.tv_usec - start.tv_usec) / 1000000.0) << "s";
-            usleep(1000000); //0.5 second
+            DLOG(INFO) << "spent clock: " << spent << "s";
+            usleep(delay);
         }
     }
     DLOG(INFO) << "average of data transmission time(s): " << spent / count << "s";
@@ -154,6 +163,6 @@ void setDirAndLog()
 
 void usage()
 {
-	DLOG(INFO) << "syntax : main <server-ip> <server-port> <ciphersuite> <filename> <count>";
-	DLOG(INFO) << "sample : main 192.168.1.2 8080 testdata.txt 30";
+	DLOG(INFO) << "syntax : main <server-ip> <server-port> <ciphersuite> <filename> <count> <view data> <delay>";
+	DLOG(INFO) << "sample : main 127.0.0.1 8080 AES128-GCM-SHA256 testdata.txt 1 0 0";
 }
