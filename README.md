@@ -47,13 +47,43 @@ AES256-CCM                     TLSv1.2 Kx=RSA      Au=RSA   Enc=AESCCM(256)     
 ## How to USE
 
 ### Server
-* main [server-port] [ciphersuite] [symmetric type] [certificate type]
+* main [server-port] [ciphersuite] [symmetric type] [certificate type] [view data] [save mode]
 ```
-$ main 8080 AES256-GCM-SHA384 aes256 2048
+$ main 8080 AES128-GCM-SHA256 aes128 2048 0 0
+$ main 8080 AES128-GCM-SHA256 aes128 4096 0 0
+$ main 8080 AES128-CCM8 aes128 2048 0 0
+$ main 8080 AES128-CCM8 aes128 4096 0 0
+$ main 8080 AES128-CCM aes128 2048 0 0
+$ main 8080 AES128-CCM aes128 4096 0 0
+$ main 8080 AES128-SHA256 aes128 2048 0 0
+$ main 8080 AES128-SHA256 aes128 4096 0 0
+$ main 8080 AES256-GCM-SHA384 aes256 2048 0 0
+$ main 8080 AES256-GCM-SHA384 aes256 4096 0 0
+$ main 8080 AES256-CCM8 aes256 2048 0 0
+$ main 8080 AES256-CCM8 aes256 4096 0 0
+$ main 8080 AES256-CCM aes256 2048 0 0
+$ main 8080 AES256-CCM aes256 4096 0 0
+$ main 8080 AES256-SHA256 aes256 2048 0 0
+$ main 8080 AES256-SHA256 aes256 4096 0 0
 ```
 
 ### Client
-* main [server-ip] [server-port] [ciphersuite] [filename] [count]
+* main [server-ip] [server-port] [ciphersuite] [filename] [count] [view data] [delay]
 ```
-$ main 127.0.0.1 8080 AES256-GCM-SHA384 testdata.txt 1
+$ main 127.0.0.1 8080 AES128-GCM-SHA256 testdata.txt 1 0 0
+$ main 127.0.0.1 8080 AES128-GCM-SHA256 testdata.txt 1 0 0
+$ main 127.0.0.1 8080 AES128-CCM8 testdata.txt 1 0 0
+$ main 127.0.0.1 8080 AES128-CCM8 testdata.txt 1 0 0
+$ main 127.0.0.1 8080 AES128-CCM testdata.txt 1 0 0
+$ main 127.0.0.1 8080 AES128-CCM testdata.txt 1 0 0
+$ main 127.0.0.1 8080 AES128-SHA256 testdata.txt 1 0 0
+$ main 127.0.0.1 8080 AES128-SHA256 testdata.txt 1 0 0
+$ main 127.0.0.1 8080 AES256-GCM-SHA384 testdata.txt 1 0 0
+$ main 127.0.0.1 8080 AES256-GCM-SHA384 testdata.txt 1 0 0
+$ main 127.0.0.1 8080 AES256-CCM8 testdata.txt 1 0 0
+$ main 127.0.0.1 8080 AES256-CCM8 testdata.txt 1 0 0
+$ main 127.0.0.1 8080 AES256-CCM testdata.txt 1 0 0
+$ main 127.0.0.1 8080 AES256-CCM testdata.txt 1 0 0
+$ main 127.0.0.1 8080 AES256-SHA256 testdata.txt 1 0 0
+$ main 127.0.0.1 8080 AES256-SHA256 testdata.txt 1 0 0
 ```
